@@ -1,1 +1,9 @@
-[{"title":"Book","imageUrl":"https://cdn.pixabay.com/photo/2020/08/25/18/29/workplace-5517762__340.jpg","description":"This is the book of books!","price":"99"},{"title":"Book","imageUrl":"https://cdn.pixabay.com/photo/2020/08/25/18/29/workplace-5517762__340.jpg","description":"no description","price":"10"}]
+[
+  {
+    "id": "0.7897064461830852",
+    "title": "Book",
+    "imageUrl": " https://cdn.pixabay.com/photo/2020/08/25/18/29/workplace-5517762__340.jpg ",
+    "description": "Bookazo                \r\n            ",
+    "price": "99"
+  }
+]

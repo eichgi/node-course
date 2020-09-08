@@ -22,9 +22,8 @@
                         <p class="product__description"><%= product.description %></p>
                     </div>
                     <div class="card__actions">
-                        <form action="/add-to-cart" method="POST">
-                            <button type="submit" class="btn">Add to Cart</button>
-                        </form>
+                        <a href="/products/<%= product.id %>" class="btn">Details</a>
+                        <%- include('../includes/add-to-cart.ejs', {product: product}) %>
                     </div>
                 </article>
             <% }); %>
@@ -34,4 +33,3 @@
     <% } %>
 </main>
 <%- include('../includes/end.ejs') %>
-<!--https://cdn.pixabay.com/photo/2020/08/25/18/29/workplace-5517762__340.jpg-->
