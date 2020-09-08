@@ -4,6 +4,8 @@ const bodyParser = require('body-parser');
 
 const errorController = require('./controllers/error');
 
+const db = require('./util/database');
+
 const adminRoutes = require('./routes/admin');
 const shopRoutes = require('./routes/shop');
 
