@@ -1,22 +1,95 @@
 const User = require('./../models/user');
+const bcrypt = require('bcryptjs');
+
+exports.getSignup = (req, res, next) => {
+  let message = req.flash('error');
+
+  if (message.length > 0) {
+    message = message[0];
+  } else {
+    message = null;
+  }
+
+  res.render('auth/signup', {
+    path: '/signup',
+    pageTitle: 'Signup',
+    isAuthenticated: false,
+    errorMessage: message,
+  });
+};
 
 exports.getLogin = (req, res, next) => {
+  let message = req.flash('error');
+
+  if (message.length > 0) {
+    message = message[0];
+  } else {
+    message = null;
+  }
+
   res.render('auth/login', {
     path: '/login',
     pageTitle: 'Login',
     isAuthenticated: req.session.isLoggedIn,
+    errorMessage: message,
   });
 };
 
+exports.postSignup = (req, res, next) => {
+  const {email, password, confirmPassword} = req.body;
+
+  User.findOne({email})
+    .then(userDoc => {
+      if (userDoc) {
+        req.flash('error', 'This email is already registered.');
+        return res.redirect('/signup');
+      }
+
+      return bcrypt.hash(password, 12)
+        .then(hashedPassword => {
+          const user = new User({
+            email,
+            password: hashedPassword,
+            cart: {items: []},
+          });
+          return user.save();
+        })
+        .then(response => {
+          res.redirect('/login');
+        });
+    })
+    .catch(error => {
+      console.log(error);
+    });
+};
+
 exports.postLogin = (req, res, next) => {
-  User.findById('5f5bf7c7c2dbf908b721a15e')
+  const {email, password} = req.body;
+
+  User.findOne({email})
     .then(user => {
-      req.session.isLoggedIn = true;
-      req.session.user = user;
-      req.session.save((error) => {
-        console.log(error);
-        res.redirect('/');
-      });
+      if (!user) {
+        req.flash('error', 'Invalid credentials');
+        return res.redirect('/login');
+      }
+
+      bcrypt.compare(password, user.password)
+        .then(doMatch => {
+          if (doMatch) {
+            req.session.isLoggedIn = true;
+            req.session.user = user;
+            return req.session.save((error) => {
+              console.log(error);
+              res.redirect('/');
+            });
+          }
+
+          req.flash('error', 'Invalid credentials');
+          res.redirect('/login');
+        })
+        .catch(error => {
+          console.log(error);
+        });
     })
     .catch(error => {
       console.log(error);
