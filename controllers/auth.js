@@ -1,4 +1,5 @@
 const User = require('./../models/user');
+const {validationResult} = require('express-validator');
 const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const nodemailer = require('nodemailer');
@@ -24,6 +25,12 @@ exports.getSignup = (req, res, next) => {
     pageTitle: 'Signup',
     isAuthenticated: false,
     errorMessage: message,
+    oldInput: {
+      email: '',
+      password: '',
+      confirmPassword: '',
+    },
+    validationErrors: [],
   });
 };
 
@@ -41,57 +48,80 @@ exports.getLogin = (req, res, next) => {
     pageTitle: 'Login',
     isAuthenticated: req.session.isLoggedIn,
     errorMessage: message,
+    oldInput: {
+      email: '',
+      password: '',
+    },
+    validationErrors: [],
   });
 };
 
 exports.postSignup = (req, res, next) => {
   const {email, password, confirmPassword} = req.body;
+  const errors = validationResult(req);
 
-  User.findOne({email})
-    .then(userDoc => {
-      if (userDoc) {
-        req.flash('error', 'This email is already registered.');
-        return res.redirect('/signup');
-      }
-
-      return bcrypt.hash(password, 12)
-        .then(hashedPassword => {
-          const user = new User({
-            email,
-            password: hashedPassword,
-            cart: {items: []},
-          });
-          return user.save();
-        })
-        .then(response => {
-          return transporter.sendMail({
-            to: email,
-            from: 'node@course.com',
-            subject: 'Welcome to Node Course',
-            html: '<h1>You successfully signed up!</h1>'
-          });
-        })
-        .then(response => {
-          console.log(response);
-          res.redirect('/login');
-        })
-        .catch(error => {
-          console.log(error);
-        });
-    })
-    .catch(error => {
-      console.log(error);
+  if (!errors.isEmpty()) {
+    return res.status(422).render('auth/signup', {
+      path: '/signup',
+      pageTitle: 'Signup',
+      isAuthenticated: false,
+      errorMessage: errors.array()[0].msg,
+      oldInput: {email, password, confirmPassword},
+      validationErrors: errors.array(),
     });
+  }
+
+  bcrypt.hash(password, 12)
+    .then(hashedPassword => {
+      const user = new User({
+        email,
+        password: hashedPassword,
+        cart: {items: []},
+      });
+      return user.save();
+    })
+    .then(response => {
+      return transporter.sendMail({
+        to: email,
+        from: 'node@course.com',
+        subject: 'Welcome to Node Course',
+        html: '<h1>You successfully signed up!</h1>'
+      });
+    })
+    .then(response => {
+      console.log(response);
+      res.redirect('/login');
+    }).catch(error => {
+    console.log(error);
+  });
 };
 
 exports.postLogin = (req, res, next) => {
   const {email, password} = req.body;
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    return res.status(422).render('auth/login', {
+      path: '/login',
+      pageTitle: 'Login',
+      isAuthenticated: false,
+      errorMessage: errors.array()[0].msg,
+      oldInput: {email, password},
+      validationErrors: errors.array(),
+    });
+  }
 
   User.findOne({email})
     .then(user => {
       if (!user) {
-        req.flash('error', 'Invalid credentials');
-        return res.redirect('/login');
+        return res.status(422).render('auth/login', {
+          path: '/login',
+          pageTitle: 'Login',
+          isAuthenticated: false,
+          errorMessage: 'Invalid credentials',
+          oldInput: {email, password},
+          validationErrors: [],
+        });
       }
 
       bcrypt.compare(password, user.password)
@@ -105,8 +135,14 @@ exports.postLogin = (req, res, next) => {
             });
           }
 
-          req.flash('error', 'Invalid credentials');
-          res.redirect('/login');
+          return res.status(422).render('auth/login', {
+            path: '/login',
+            pageTitle: 'Login',
+            isAuthenticated: false,
+            errorMessage: 'Invalid credentials',
+            oldInput: {email, password},
+            validationErrors: [],
+          });
         })
         .catch(error => {
           console.log(error);

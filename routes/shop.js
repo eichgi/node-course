@@ -1,4 +1,5 @@
 const express = require('express');
+const {check} = require('express-validator');
 const shopController = require('../controllers/shop');
 const isAuth = require('./../middlewares/is-auth');
 
