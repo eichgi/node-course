@@ -91,9 +91,12 @@ exports.postSignup = (req, res, next) => {
     .then(response => {
       console.log(response);
       res.redirect('/login');
-    }).catch(error => {
-    console.log(error);
-  });
+    })
+    .catch(err => {
+      const error = new Error('Production creation failed.')
+      error.httpStatusCode = 500;
+      return next(error);
+    });
 };
 
 exports.postLogin = (req, res, next) => {
@@ -148,8 +151,10 @@ exports.postLogin = (req, res, next) => {
           console.log(error);
         });
     })
-    .catch(error => {
-      console.log(error);
+    .catch(err => {
+      const error = new Error('Production creation failed.')
+      error.httpStatusCode = 500;
+      return next(error);
     });
 };
 
@@ -206,9 +211,11 @@ exports.postReset = (req, res, next) => {
           `,
         });
       })
-      .catch(error => {
-        console.log(error);
-      })
+      .catch(err => {
+        const error = new Error('Production creation failed.')
+        error.httpStatusCode = 500;
+        return next(error);
+      });
   });
 };
 
@@ -244,21 +251,27 @@ exports.postNewPassword = (req, res, next) => {
     _id: userId,
     resetToken: token,
     resetTokenExpiration: {$gt: Date.now()}
-  }).then(user => {
-    if (!user) {
-      req.flash('error', 'The link has expired');
+  })
+    .then(user => {
+      if (!user) {
+        req.flash('error', 'The link has expired');
+        res.redirect('/login');
+      }
+      resetUser = user;
+      return bcrypt.hash(password, 12)
+    })
+    .then(hashedPassword => {
+      resetUser.password = hashedPassword;
+      resetUser.resetToken = undefined;
+      resetUser.resetTokenExpiration = undefined;
+      return resetUser.save();
+    })
+    .then(response => {
       res.redirect('/login');
-    }
-    resetUser = user;
-    return bcrypt.hash(password, 12)
-  }).then(hashedPassword => {
-    resetUser.password = hashedPassword;
-    resetUser.resetToken = undefined;
-    resetUser.resetTokenExpiration = undefined;
-    return resetUser.save();
-  }).then(response => {
-    res.redirect('/login');
-  }).catch(error => {
-    console.log(error);
-  });
+    })
+    .catch(err => {
+      const error = new Error('Production creation failed.')
+      error.httpStatusCode = 500;
+      return next(error);
+    });
 }

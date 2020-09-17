@@ -58,9 +58,11 @@ exports.postCart = (req, res, next) => {
       console.log(result);
       res.redirect('/cart');
     })
-    .catch(error => {
-      console.log(error);
-    })
+    .catch(err => {
+      const error = new Error('Production creation failed.')
+      error.httpStatusCode = 500;
+      return next(error);
+    });
 };
 
 exports.getCheckout = (req, res, next) => {
@@ -77,9 +79,11 @@ exports.postCartDeleteProduct = (req, res, next) => {
     .then(result => {
       res.redirect('/cart');
     })
-    .catch(error => {
-      console.log(error);
-    })
+    .catch(err => {
+      const error = new Error('Production creation failed.')
+      error.httpStatusCode = 500;
+      return next(error);
+    });
 }
 
 exports.getOrders = (req, res, next) => {
@@ -137,8 +141,10 @@ exports.postOrder = (req, res, next) => {
     .then(result => {
       res.redirect('/orders');
     })
-    .catch(error => {
-      console.log(error);
+    .catch(err => {
+      const error = new Error('Production creation failed.')
+      error.httpStatusCode = 500;
+      return next(error);
     });
 };
 
