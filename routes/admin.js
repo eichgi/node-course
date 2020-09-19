@@ -9,7 +9,6 @@ router.get('/add-product', isAuth, adminController.getAddProduct);
 router.post('/add-product',
   [
   check('title').isString().isLength({min: 3,}).trim(),
-  //check('imageUrl').isURL().trim(),
   check('price').isFloat().trim(),
   check('description').isLength({min: 5, max: 400}).trim(),
 ], isAuth, adminController.postAddProduct);
@@ -22,6 +21,6 @@ router.post('/edit-product',
   ],
   isAuth, adminController.postEditProduct);
 router.get('/edit-product/:productId', isAuth, adminController.getEditProduct);
-router.post('/delete-product', isAuth, adminController.postDeleteProduct);
+router.delete('/product/:productId', isAuth, adminController.deleteProduct);
 
 module.exports = router;
