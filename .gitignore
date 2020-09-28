@@ -1,5 +1,9 @@
 node_modules
 .idea
 .env
+nodemon.json
 images
 data/invoices
+access.log
+server.cert
+server.key
