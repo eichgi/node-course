@@ -1,8 +1,0 @@
-{
-  "env": {
-    "MONGODB_URI": "mongodb+srv://react:react@cluster0.4mmt6.mongodb.net/node-course",
-    "SENDGRID_API_KEY": "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",
-    "STRIPE_SECRET_KEY": "sk_test_kANMF1RiQ1I69MgTxF6f96gl",
-    "PORT": 3000
-  }
-}
